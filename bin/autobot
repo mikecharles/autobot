@@ -1,0 +1,160 @@
+#!/usr/bin/env python
+
+import getopt
+import sys
+import os
+import subprocess
+from subprocess import call
+import re
+
+options, remainder = getopt.getopt(sys.argv[1:], 'cwrh', ['check', 'walkthrough', 'run', 'help', ])
+
+
+def get_version(command):
+    command_result = os.popen(command).read()
+    m = re.search('(\d+\.)?(\d+\.)?(\*|\d+)', command_result)
+    return m.group(0)
+
+
+def version_check(software, try_text):
+    software_version = get_version("%s --version" % software)
+    if(software_version <= 0):
+        print ("[:(] %s v%s :: try `%s`" % (software, software_version, try_text))
+    else:
+        print ("[ok] %s v%s" % (software, software_version) )
+
+
+def env_check(env_var_name, example):
+    print "Your %s=%s" % (env_var_name, os.environ.get(env_var_name))
+    print "     export %s=%s" % (env_var_name,example)
+    print
+
+def check_requirments():
+
+    print 'Checking your softwares:'
+    print '------------------------'
+    version_check("ansible"       , "brew install ansible")
+    version_check("git"           , "brew install git")
+    version_check("vboxmanage"    , "https://www.virtualbox.org/wiki/Downloads")
+    version_check("docker"        , "curl -L https://get.docker.com/builds/Darwin/x86_64/docker-latest > /usr/local/bin/docker'")
+    version_check("docker-machine", "sudo wget -O /usr/local/bin/docker-machine https://github.com/docker/machine/releases/download/v0.1.0/docker-machine_darwin-amd64; chmod +x docker-machine")
+    version_check("docker-compose", "curl -L https://github.com/docker/compose/releases/download/1.1.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose; chmod +x /usr/local/bin/docker-compose")
+    print
+
+    print 'Checking your ~/.docker/ file for autobot machine keys:'
+    print '-----------------------------------------------------'
+    command = 'ls -la ~/.docker/machine/machines/autobot/'
+    command_result = os.popen(command).read()
+    print command_result
+
+    print 'Checking your ENV variables :'
+    print '----------------------------'
+    env_check('PWD'                    , '~/autobot')
+    env_check('MACHINE_STORAGE_PATH'   , '$PWD/.docker')
+    env_check('CONFLUENCE_USERNAME'    , 'your_username')
+    env_check('CONFLUENCE_PASSWORD'    , 'your_password')
+    env_check('HUBOT_HIPCHAT_JID'      , 'hubot_username')
+    env_check('HUBOT_HIPCHAT_PASSWORD' , 'hubut_password')
+    print
+
+    print 'Checking what docker machines you have access to:'
+    print '------------------------------------------------'
+    command = 'docker-machine ls'
+    command_result = os.popen(command).read()
+    print command_result
+
+
+def walkthrough():
+
+    print '# creates a docker host - local autobot development'
+    print 'docker-machine create -d virtualbox dev'
+    print
+    
+    print '# eval the docker env vars,'
+    print '# that way your docker-* commands will target the autobot host'
+    print '############################################################'
+    print '$(docker-machine env autobot)'
+    print
+
+    print '# run a hubot container on the autobot server,'
+    print '# linking to the existing redis container (the hubot container is not given a name' 
+    print '# so it will not conflict with the existing hubot container)'
+    print '# ...also, we are using the "Shell" adapter so you can test your change on the commandline'
+    print '##########################################################################################'
+    print 'docker-compose build hubot && docker run -it --rm \\'
+    print '-e CONFLUENCE_USERNAME=$CONFLUENCE_USERNAME -e CONFLUENCE_PASSWORD=$CONFLUENCE_PASSWORD \\' 
+    print '--link autobot_redis_1:redis autobot_hubot:latest hubot'
+    print
+
+    print 'Note the addition of the HUBOT vars and the `-a hipchat` connector.'
+    print '##########################################################################################'
+    print 'docker-compose build hubot && docker run -it --rm \\'
+    print '-e CONFLUENCE_USERNAME=$CONFLUENCE_USERNAME -e CONFLUENCE_PASSWORD=$CONFLUENCE_PASSWORD \\'
+    print '-e HUBOT_HIPCHAT_JID=$HUBOT_HIPCHAT_JID -e HUBOT_HIPCHAT_PASSWORD=$HUBOT_HIPCHAT_PASSWORD \\'
+    print '--link autobot_redis_1:redis autobot_hubot:latest hubot -a hipchat'
+
+def run():
+
+    print 'run - figure out how to do an interactice shell'
+
+
+def help():
+    print '''autobot ----------------------
+    
+    -c --check
+        Run checks
+
+    -w --walkthrough
+        Walthrough the commands you'll use from day to day
+
+    -r --run
+        Run a pre-defined action
+
+    -h --help
+        Show the help
+    '''
+
+if __name__ == '__main__':
+
+    # set vars
+    # act on incoming params
+    for opt, arg in options:
+        if opt in ['-c','--check']:
+            check_requirments()
+        elif opt in ['-w','--walkthrough']:
+            walkthrough()
+        elif opt in ['-r','--run']:
+            run()
+        elif opt in ['-h','--help']:
+            help()
+        else:
+            help()
+
+    # display params
+    print
+    print 'DEBUG -------------------------'
+    print 'ARGV      :', sys.argv[1:]
+    print 'OPTIONS   :', options
+    print 'REMAINING :', remainder
+    print
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
