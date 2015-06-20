@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+
+"""A script that creates a dynamic inventory from docker-machine"""
+
+import json
+import subprocess
+import sys
+import urlparse
+
+p = subprocess.Popen(["docker-machine", "ls"], stdout=subprocess.PIPE)
+(o, e) = p.communicate()
+r = p.wait()
+
+dockers = {}
+for name, ip in [(x.split()[0], urlparse.urlparse(x.split()[-1]).netloc.split(':')[0]) for x in o.splitlines()[1:]]:
+    dockers[name] = {
+        "ansible_ssh_private_key_file": "~/.docker/machine/machines/%s/id_rsa" % name,
+        "ansible_ssh_user": "ubuntu",
+        "ansible_ssh_host": ip,
+    }
+
+inventory = {
+    "localhost": {
+	"ansible_connection": "local"
+    },
+    "dockers": dockers.keys(),
+}
+inventory.update(dockers)
+
+json.dump(inventory, sys.stdout)

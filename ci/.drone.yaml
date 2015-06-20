@@ -1,0 +1,31 @@
+#
+# drone configuration
+#####################
+# v 0.0.1
+
+# build image
+image: ubuntu
+
+# build commands
+script:
+  - curl -L https://github.com/docker/compose/releases/download/1.2.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+  - chmod +x /usr/local/bin/docker-compose
+  - docker build hubot/.
+
+# deploy commands
+deploy:
+  bash:
+    script:
+      - docker-compose build hubot
+      - docker rm -f autobot_hubot_1
+      - docker-compose up -d hubot
+    branch: master
+
+# notify people
+notify:
+  hipchat:
+    room: "#Autobot"
+    token: {{hipchatToken}}
+    on_started: false
+    on_success: true
+    on_failure: true
