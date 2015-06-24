@@ -101,19 +101,29 @@ def run():
 
 
 def help():
-    print '''autobot ----------------------
-    
+    print '''
+--------------------------------------------------------------------------
+Hi, I'm Jeeves. I'm here to make sure everything is okay with autobot. *_*
+--------------------------------------------------------------------------    
+
+I might not do very much, but I can be quite helpful if you know how to ask.
+
+    How can I help?
+
     -c --check
-        Run checks
+        Check that you have the required software, and help you install it.
+        Check for env vars.
+        Check what docker machines you have access to.
 
     -w --walkthrough
-        Walthrough the commands you'll use from day to day
+        A walkthrough of useful commands for controlling autobot.
 
     -r --run
-        Run a pre-defined action
+        Run a pre-defined action.
 
     -h --help
-        Show the help
+        Show this awesome help screen, but then again you alredy knew
+        that -h does this, didn't you?
     '''
 
 if __name__ == '__main__':
@@ -129,8 +139,10 @@ if __name__ == '__main__':
             run()
         elif opt in ['-h', '--help']:
             help()
-        else:
-            help()
+
+    # if no args passed, show help
+    if not sys.argv[1:]:
+        help()
 
     # display params
     print

@@ -10,7 +10,7 @@ import urlparse
 p = subprocess.Popen(["docker-machine", "ls"], stdout=subprocess.PIPE)
 (o, e) = p.communicate()
 r = p.wait()
-
+print 'foo -------------------------------------------------'
 dockers = {}
 for name, ip in [(x.split()[0], urlparse.urlparse(x.split()[-1]).netloc.split(':')[0]) for x in o.splitlines()[1:]]:
     dockers[name] = {
