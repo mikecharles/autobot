@@ -24,16 +24,44 @@ def version_check(software, try_text):
         print ("[ok] %s v%s" % (software, software_version))
 
 
-def env_check(env_var_name, example):
-    print "Your %s=%s" % (env_var_name, os.environ.get(env_var_name))
-    print "     export %s=%s" % (env_var_name, example)
+def env_check(env_vars):
+
+    # find the longest string (first loop)
+    longest=0
+    for key, value in env_vars.iteritems():
+
+        if(os.environ.get(key)):
+            envlen=len(os.environ.get(key))
+        else:
+            envlen = 4 # if we don't have an env value, we'll print `None`
+
+        variblelen=len(key)+envlen
+
+        if variblelen > longest:
+            longest = variblelen
+
+    # print the values (second loop)
+    for key, value in env_vars.iteritems():
+
+        if(os.environ.get(key)):
+            envlen=len(os.environ.get(key))
+        else:
+            envlen = 4 # if we don't have an env value, we'll print `None`
+
+        variblelen=longest-(len(key)+envlen)
+
+        padding_string=" "*(variblelen)
+
+        print "Your ENV %s=%s %s:: Try something like this `export %s=%s`" % (key, os.environ.get(key), padding_string, key, value)
+
     print
 
 
 def check_requirments():
 
-    print 'Checking your softwares:'
-    print '------------------------'
+    print
+    print 'Checking for software dependencies:'
+    print '-----------------------------------'
     version_check("ansible", "brew install ansible")
     version_check("git", "brew install git")
     version_check("vboxmanage", "https://www.virtualbox.org/wiki/Downloads")
@@ -43,23 +71,28 @@ def check_requirments():
     print
 
     print 'Checking your ~/.docker/ file for autobot machine keys:'
-    print '-----------------------------------------------------'
+    print '-------------------------------------------------------'
     command = 'ls -la ~/.docker/machine/machines/autobot/'
     command_result = os.popen(command).read()
     print command_result
 
     print 'Checking your ENV variables :'
     print '----------------------------'
-    env_check('PWD', '~/autobot')
-    env_check('MACHINE_STORAGE_PATH', '$PWD/.docker')
-    env_check('CONFLUENCE_USERNAME', 'your_username')
-    env_check('CONFLUENCE_PASSWORD', 'your_password')
-    env_check('HUBOT_HIPCHAT_JID', 'hubot_username')
-    env_check('HUBOT_HIPCHAT_PASSWORD', 'hubut_password')
-    print
+
+    env_vars = {
+        'PWD'                    : '~/autobot',
+        'MACHINE_STORAGE_PATH'   : '$PWD/.docker',
+        'CONFLUENCE_USERNAME'    : 'your_username',
+        'CONFLUENCE_PASSWORD'    : 'your_password',
+        'HUBOT_HIPCHAT_JID'      : 'hubot_username',
+        'HUBOT_HIPCHAT_PASSWORD' : 'hubot_password'
+    }
+    
+    env_check(env_vars)    
 
     print 'Checking what docker machines you have access to:'
     print '------------------------------------------------'
+    print '`docker-machine ls`'
     command = 'docker-machine ls'
     command_result = os.popen(command).read()
     print command_result
