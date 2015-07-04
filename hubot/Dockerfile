@@ -30,14 +30,8 @@ COPY scripts /usr/src/app/scripts
 
 RUN npm install
 
-
 RUN useradd -m hubot && chown -R hubot:hubot /usr/src/app
 
-COPY keys/autobot-sprout-throwaway-box.pem /usr/src/app/autobot-sprout-throwaway-box.pem
-RUN chown hubot /usr/src/app/autobot-sprout-throwaway-box.pem
-RUN chmod 400 /usr/src/app/autobot-sprout-throwaway-box.pem
-
-RUN echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
 
 #####################################
 # everything below here runs as hubot
