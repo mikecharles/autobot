@@ -42,24 +42,17 @@ The bin directory contains scripts used by the project (though not strictly bina
 
 `.drone.yaml` is the configuration file for drone (a ci pipeline). It takes an ubuntu image and installs docker-compose on it. A deployment script builds hubot with the latest code. Notifications are sent to a hipchat room.
 
-### hubot/
+### autobot/
 
 - Dockerfile
 - package.json
-
-The `Dockerfile` holds the configuration for spining up an instance of Hubot and loading scripts from the `hubot-scripts` directory. 
-`package.json` is a supporting file, which gets fed in by `Dockerfile`.
-
-### hubot-scripts/
-
-Any scripts in this directory are loaded by the hubot Dockerfile.
-
-- example.coffee (robot.hear /badger/i)
-
-### autobot/
-
 - docker-compose.yaml
 - site.yaml
+
+The `Dockerfile` holds the configuration for spining up an instance of Hubot and loading scripts from the `hubot-scripts` directory. 
+
+`package.json` is a supporting file, which gets fed in by `Dockerfile`.
+
 
 `docker-compose.yaml` configures the following containers:
 
@@ -74,6 +67,13 @@ Ansible uses `site.yaml` to do the following:
 - on localhost: Executing docker-compose build. Passing ENV vars. Running docker-compose up.
 
 and for storing private data in `group_vars/all`.
+
+### autobot/hubot-scripts/
+
+Any scripts in this directory are loaded by the hubot Dockerfile.
+
+- example.coffee (robot.hear /badger/i)
+
 
 ### docs/
 

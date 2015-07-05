@@ -26,7 +26,7 @@ RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 COPY package.json /usr/src/app/
-COPY scripts /usr/src/app/scripts
+COPY hubot-scripts /usr/src/app/scripts
 
 RUN npm install
 
