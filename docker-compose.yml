@@ -1,3 +1,11 @@
+################################################################################
+# our multi-container application :: autobot
+################################################################################
+
+
+########################################
+# container :: hubot
+########################################
 hubot:
   build: .
   links:
@@ -7,9 +15,20 @@ hubot:
     - HUBOT_HIPCHAT_PASSWORD
     - CONFLUENCE_USERNAME
     - CONFLUENCE_PASSWORD
+
+
+########################################
+# container :: data store
+########################################
 redis:
   image: redis
+
+
+########################################
+# container :: continuous delivery
+########################################
 drone:
+  # *mostly* just the drone image https://github.com/drone/drone/pull/1028/files
   image: pdericson/drone
   ports:
     - 443:443

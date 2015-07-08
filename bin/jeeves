@@ -120,19 +120,25 @@ def walkthrough():
     print '$(docker-machine env dev)'
     print
 
-    print colors.HEADER + 'Spin up a hubot container' + colors.ENDC
+    print colors.HEADER + 'Create docker containers on your host (one or the other?)' + colors.ENDC
+    print colors.OKBLUE + 'Something like this. What\'s group_vars/all ...? *shrugs*' + colors.ENDC
+    print 'ansible-playbook -i hosts site.yml --ask-vault-pass'
+    print 'docker-compose up'
+    print
+
+    print colors.HEADER + 'Spin up a hubot container...' + colors.ENDC
     print colors.OKBLUE + 'Pass confluence credentials.' + colors.ENDC
     print 'docker-compose build hubot && docker run -it --rm \\' 
     print '-e CONFLUENCE_USERNAME=$CONFLUENCE_USERNAME -e CONFLUENCE_PASSWORD=$CONFLUENCE_PASSWORD'
     print
 
-    print colors.HEADER + 'Optional: Link Containers' + colors.ENDC
+    print colors.HEADER + '...Optional: Link Containers' + colors.ENDC
     print colors.OKBLUE + 'Linking to the existing redis container.' + colors.ENDC
     print colors.OKBLUE + 'The hubot container is not given a name so it will not conflict with the existing hubot container.' + colors.ENDC
     print '--link autobot_redis_1:redis autobot_hubot:latest'
     print
 
-    print colors.HEADER + 'Optional: Hipchat Connector (and Shell Adapter)' + colors.ENDC
+    print colors.HEADER + '...Optional: Hipchat Connector (and Shell Adapter)' + colors.ENDC
     print colors.OKBLUE + 'Using hubot vars and connector (-a hipchat).' + colors.ENDC
     print colors.OKBLUE + 'The "Shell" adapter (hubot) can be used to test your change on the commandline' + colors.ENDC
     print '-e HUBOT_HIPCHAT_JID=$HUBOT_HIPCHAT_JID -e HUBOT_HIPCHAT_PASSWORD=$HUBOT_HIPCHAT_PASSWORD \\'
@@ -141,10 +147,23 @@ def walkthrough():
 
     print colors.HEADER + 'All together' + colors.ENDC
     print colors.OKBLUE + 'Using all the option extras.' + colors.ENDC
+    print colors.OKBLUE + '`hubot` dumps you into a hubot-shell after spining up the containers' + colors.ENDC
+    print colors.OKBLUE + '`-a hipchat` will connect directly to a hipchat server' + colors.ENDC
     print 'docker-compose build hubot && docker run -it --rm \\' 
-    print '-e CONFLUENCE_USERNAME=$CONFLUENCE_USERNAME -e CONFLUENCE_PASSWORD=$CONFLUENCE_PASSWORD'
+    print '-e CONFLUENCE_USERNAME=$CONFLUENCE_USERNAME -e CONFLUENCE_PASSWORD=$CONFLUENCE_PASSWORD \\'
     print '-e HUBOT_HIPCHAT_JID=$HUBOT_HIPCHAT_JID -e HUBOT_HIPCHAT_PASSWORD=$HUBOT_HIPCHAT_PASSWORD \\'
     print '--link autobot_redis_1:redis autobot_hubot:latest hubot -a hipchat'
+    print
+
+    print colors.HEADER + 'What it looks like when it works' + colors.ENDC
+    print colors.OKGREEN + '$ docker-compose build hubot && docker run ... hubot' + colors.ENDC
+    print colors.OKBLUE + 'Building hubot...' + colors.ENDC
+    print colors.OKBLUE + 'Step 0 : FROM ubuntu:trusty' + colors.ENDC
+    print colors.OKBLUE + 'Step 1 : MAINTAINER Autocorp <https://github.com/autocorp>' + colors.ENDC
+    print colors.OKBLUE + '...' + colors.ENDC
+    print colors.OKBLUE + 'Successfully built 4be767a4a3a8' + colors.ENDC
+    print colors.OKGREEN + 'Hubot> @hubot what is your opinion on badgers' + colors.ENDC
+    print colors.OKBLUE + 'Badgers? BADGERS? WE DON\'T NEED NO STINKIN BADGERS' + colors.ENDC
     print
 
 def run():

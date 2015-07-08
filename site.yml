@@ -1,8 +1,25 @@
+################################################################################
+# rebuild all the containers
+################################################################################
+
+# manage the containers with:
+#   ansible-playbook -i hosts site.yml --ask-vault-pass
+#
+#   @todo explain group_vars/all
+
+########################################
+#  Checking for a docker container called 'autobot'.
+#  If it doesn't exist, make a new one.
+########################################
 - hosts: localhost
   tasks:
     - shell: docker-machine ls | sed 1d | awk '{print $1}' | grep -q '^autobot$' || docker-machine create -d amazonec2 --amazonec2-access-key {{ amazonec2_access_key }} --amazonec2-region {{ amazonec2_region }} --amazonec2-secret-key {{ amazonec2_secret_key }} --amazonec2-subnet-id {{ amazonec2_subnet_id }} --amazonec2-vpc-id {{ amazonec2_vpc_id }} autobot
 
 
+########################################
+#  Add ubuntu to the docker group,
+#  and create a self-signed cert for drone.
+########################################
 - hosts: autobot
   sudo: true
   tasks:
@@ -26,6 +43,11 @@
         creates=cert.pem
 
 
+########################################
+#  Executing docker-compose build.
+#  Passing ENV vars.
+#  Running docker-compose up.
+########################################
 - hosts: localhost
   tasks:
 

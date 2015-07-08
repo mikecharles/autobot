@@ -19,10 +19,10 @@ The key techologies the make up Autobot are: hubot, ansible, docker and drone.
 
 The stack looks like this:
 
-- Git (for this repository)
 - Ansible (to configure the hosts)
 - Docker, Docker-Machine, Docker-Compose (to maintain the containers)
 - Virtual Machine & AWS (for compute power)
+- Hubot with a Redis data store, deployed via drone
 
 ## This Repo
 
@@ -31,23 +31,16 @@ The stack looks like this:
 The bin directory contains scripts used by the project (though not strictly binary files).
 
 - jeeves
-- hosts
 
-`jeeves` is a python script to help setup and interact with autobot
-`hosts` is a python script to create a dynamic inventory from docker-machine
+`jeeves` is a python script to help setup and manage autobot
 
-### ci/
-
-- .drone.yaml
-
-`.drone.yaml` is the configuration file for drone (a ci pipeline). It takes an ubuntu image and installs docker-compose on it. A deployment script builds hubot with the latest code. Notifications are sent to a hipchat room.
-
-### autobot/
+### /
 
 - Dockerfile
 - package.json
 - docker-compose.yaml
 - site.yaml
+- hosts
 
 The `Dockerfile` holds the configuration for spining up an instance of Hubot and loading scripts from the `hubot-scripts` directory. 
 
@@ -68,12 +61,19 @@ Ansible uses `site.yaml` to do the following:
 
 and for storing private data in `group_vars/all`.
 
-### autobot/hubot-scripts/
+### hubot-scripts/
 
 Any scripts in this directory are loaded by the hubot Dockerfile.
 
 - example.coffee (robot.hear /badger/i)
 
+`hosts` is a python script to create a dynamic inventory from docker-machine
+
+### continuous-delivery/
+
+- .drone.yaml
+
+`.drone.yaml` is the configuration file for drone (a continuous delivery pipeline). It takes an ubuntu image and installs docker-compose on it. A deployment script builds hubot with the latest code. Notifications are sent to a hipchat room.
 
 ### docs/
 
