@@ -3,9 +3,9 @@
 ################################################################################
 
 # manage the containers with:
-#   ansible-playbook -i hosts site.yml --ask-vault-pass
+#   ansible-playbook -i hosts site.yml --ask-vault-pass  # specify --ask-vault-pass if your groups_vars/all is encrypted
 #
-#   @todo explain group_vars/all
+#   You will need to update groups_vars/all with your Amazon EC2 configuration
 
 ########################################
 #  Checking for a docker container called 'autobot'.

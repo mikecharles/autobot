@@ -117,12 +117,14 @@ def walkthrough():
 
     print colors.HEADER + 'Eval the docker env vars' + colors.ENDC
     print colors.OKBLUE + 'Useful as your docker-* commands will target the autobot host.' + colors.ENDC
-    print '$(docker-machine env dev)'
+    print 'eval "$(docker-machine env dev)"'
     print
 
-    print colors.HEADER + 'Create docker containers on your host (one or the other?)' + colors.ENDC
-    print colors.OKBLUE + 'Something like this. What\'s group_vars/all ...? *shrugs*' + colors.ENDC
-    print 'ansible-playbook -i hosts site.yml --ask-vault-pass'
+    print colors.HEADER + 'Create a docker machine on Amazon EC2' + colors.ENDC
+    print 'ansible-playbook -i hosts site.yml  # specify --ask-vault-pass if your groups_vars/all is encrypted'
+    print
+
+    print colors.HEADER + 'Create docker containers on your host' + colors.ENDC
     print 'docker-compose up'
     print
 
