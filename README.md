@@ -15,6 +15,25 @@ git clone git@github.com:autocorp/autobot.git
 cd autobot; ./bin/jeeves
 ```
 
+# Hello World
+
+Lets get straight into a real use case. We're going to create a development server and interact with Hubot.
+
+In your terminal, type the following:
+```
+docker-machine create -d virtualbox dev
+eval "$(docker-machine env dev)"
+docker-compose build hubot && docker run -it --rm autobot_hubot:latest hubot
+```
+
+Once you're in a Hubot shell you can start talking to Hubot:
+```
+Hubot> @hubot badgers
+Badgers? BADGERS? WE DON'T NEED NO STINKIN BADGERS
+```
+
+Real world usage may include other bits of technology and connections, like Redis, Confluence and Hipchat. We can build in later.
+
 ## The Stack
 
 The key techologies the make up Autobot are: hubot, ansible, docker and drone.
