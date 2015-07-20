@@ -108,6 +108,11 @@ def check_requirments():
     command_result = os.popen(command).read()
     print command_result
 
+    print colors.HEADER + 'Checking containers in dev' + colors.ENDC
+    print '`eval "$(docker-machine env dev)"; docker ps`'
+    command = 'eval "$(docker-machine env dev)"; docker ps'
+    command_result = os.popen(command).read()
+    print command_result
 
 def walkthrough():
 
