@@ -4,6 +4,8 @@
 
 The autobot project provides an easy delivery mechanism for maintaining your very own Hubot installation.
 
+![alt text](autobot-logo.png "autobot")
+
 # Getting Started
 ```
 # Get yourself a copy of the repo
