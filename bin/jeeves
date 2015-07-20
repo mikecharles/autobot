@@ -1,0 +1,218 @@
+#!/usr/bin/env python
+
+import getopt
+import sys
+import os
+import subprocess
+from subprocess import call
+import re
+
+options, remainder = getopt.getopt(sys.argv[1:], 'cwrh', ['check', 'walkthrough', 'run', 'help', ])
+
+
+class colors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+def get_version(command):
+    command_result = os.popen(command).read()
+    m = re.search('(\d+\.)?(\d+\.)?(\*|\d+)', command_result)
+    return m.group(0)
+
+
+def version_check(software, try_text):
+    software_version = get_version("%s --version" % software)
+    if(software_version <= 0):
+        print (colors.FAIL + "[FAIL] %s v%s :: try `%s`" % (software, software_version, try_text) + colors.ENDC)
+    else:
+        print (colors.OKGREEN + "[ok] %s v%s" % (software, software_version) + colors.ENDC)
+
+
+def env_check(env_vars):
+
+    # find the longest string (first loop)
+    longest=0
+    for key, value in env_vars.iteritems():
+
+        if(os.environ.get(key)):
+            envlen=len(os.environ.get(key))
+        else:
+            envlen = 4 # if we don't have an env value, we'll print `None`
+
+        variblelen=len(key)+envlen
+
+        if variblelen > longest:
+            longest = variblelen
+
+    # print the values (second loop)
+    for key, value in env_vars.iteritems():
+
+        if(os.environ.get(key)):
+            envlen=len(os.environ.get(key))
+        else:
+            envlen = 4 # if we don't have an env value, we'll print `None`
+
+        variblelen=longest-(len(key)+envlen)
+
+        padding_string=" "*(variblelen)
+
+        if(os.environ.get(key)==None):
+            start_color=colors.FAIL
+        else:
+            start_color=colors.OKGREEN
+        print "Your ENV %s%s=%s%s %s:: Try something like this `export %s=%s`" % (start_color, key, os.environ.get(key), colors.ENDC, padding_string, key, value)
+
+    print
+
+
+def check_requirments():
+
+    print
+    print colors.HEADER + 'Checking for software dependencies' + colors.ENDC
+    version_check("ansible", "brew install ansible")
+    version_check("git", "brew install git")
+    version_check("vboxmanage", "https://www.virtualbox.org/wiki/Downloads")
+    version_check("docker", "curl -L https://get.docker.com/builds/Darwin/x86_64/docker-latest > /usr/local/bin/docker'")
+    version_check("docker-machine", "sudo wget -O /usr/local/bin/docker-machine https://github.com/docker/machine/releases/download/v0.1.0/docker-machine_darwin-amd64; chmod +x docker-machine")
+    version_check("docker-compose", "curl -L https://github.com/docker/compose/releases/download/1.1.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose; chmod +x /usr/local/bin/docker-compose")
+
+    print
+    print colors.HEADER + 'Checking your ~/.docker/ file for autobot machine keys' + colors.ENDC
+    command = 'ls -la ~/.docker/machine/machines/autobot/'
+    command_result = os.popen(command).read()
+    print command_result
+
+    print
+    print colors.HEADER + 'Checking your ENV variables (place these somewhere like ~/.bash_profile so they persist)' + colors.ENDC
+
+    env_vars = {
+        'PWD'                    : '~/autobot',
+        'MACHINE_STORAGE_PATH'   : '$PWD/.docker',
+        'CONFLUENCE_USERNAME'    : 'your_username',
+        'CONFLUENCE_PASSWORD'    : 'your_password',
+        'HUBOT_HIPCHAT_JID'      : 'hubot_username',
+        'HUBOT_HIPCHAT_PASSWORD' : 'hubot_password'
+    }
+    
+    env_check(env_vars)    
+
+    print colors.HEADER + 'Checking what docker machines you have access to' + colors.ENDC
+    print '`docker-machine ls`'
+    command = 'docker-machine ls'
+    command_result = os.popen(command).read()
+    print command_result
+
+
+def walkthrough():
+
+    print colors.HEADER + 'Create a local docker host, for autobot development' + colors.ENDC
+    print 'docker-machine create -d virtualbox dev'
+    print
+
+    print colors.HEADER + 'Eval the docker env vars' + colors.ENDC
+    print colors.OKBLUE + 'Useful as your docker-* commands will target the autobot host.' + colors.ENDC
+    print 'eval "$(docker-machine env dev)"'
+    print
+
+    print colors.HEADER + 'Create a docker machine on Amazon EC2' + colors.ENDC
+    print 'ansible-playbook -i hosts site.yml  # specify --ask-vault-pass if your groups_vars/all is encrypted'
+    print
+
+    print colors.HEADER + 'Create docker containers on your host' + colors.ENDC
+    print 'docker-compose up'
+    print
+
+    print colors.HEADER + 'Spin up a hubot container...' + colors.ENDC
+    print colors.OKBLUE + 'Pass confluence credentials.' + colors.ENDC
+    print 'docker-compose build hubot && docker run -it --rm \\' 
+    print '-e CONFLUENCE_USERNAME=$CONFLUENCE_USERNAME -e CONFLUENCE_PASSWORD=$CONFLUENCE_PASSWORD'
+    print
+
+    print colors.HEADER + '...Optional: Link Containers' + colors.ENDC
+    print colors.OKBLUE + 'Linking to the existing redis container.' + colors.ENDC
+    print colors.OKBLUE + 'The hubot container is not given a name so it will not conflict with the existing hubot container.' + colors.ENDC
+    print '--link autobot_redis_1:redis autobot_hubot:latest'
+    print
+
+    print colors.HEADER + '...Optional: Hipchat Connector (and Shell Adapter)' + colors.ENDC
+    print colors.OKBLUE + 'Using hubot vars and connector (-a hipchat).' + colors.ENDC
+    print colors.OKBLUE + 'The "Shell" adapter (hubot) can be used to test your change on the commandline' + colors.ENDC
+    print '-e HUBOT_HIPCHAT_JID=$HUBOT_HIPCHAT_JID -e HUBOT_HIPCHAT_PASSWORD=$HUBOT_HIPCHAT_PASSWORD \\'
+    print ' hubot -a hipchat'
+    print
+
+    print colors.HEADER + 'All together' + colors.ENDC
+    print colors.OKBLUE + 'Using all the option extras.' + colors.ENDC
+    print colors.OKBLUE + '`hubot` dumps you into a hubot-shell after spining up the containers' + colors.ENDC
+    print colors.OKBLUE + '`-a hipchat` will connect directly to a hipchat server' + colors.ENDC
+    print 'docker-compose build hubot && docker run -it --rm \\' 
+    print '-e CONFLUENCE_USERNAME=$CONFLUENCE_USERNAME -e CONFLUENCE_PASSWORD=$CONFLUENCE_PASSWORD \\'
+    print '-e HUBOT_HIPCHAT_JID=$HUBOT_HIPCHAT_JID -e HUBOT_HIPCHAT_PASSWORD=$HUBOT_HIPCHAT_PASSWORD \\'
+    print '--link autobot_redis_1:redis autobot_hubot:latest hubot -a hipchat'
+    print
+
+    print colors.HEADER + 'What it looks like when it works' + colors.ENDC
+    print colors.OKGREEN + '$ docker-compose build hubot && docker run ... hubot' + colors.ENDC
+    print colors.OKBLUE + 'Building hubot...' + colors.ENDC
+    print colors.OKBLUE + 'Step 0 : FROM ubuntu:trusty' + colors.ENDC
+    print colors.OKBLUE + 'Step 1 : MAINTAINER Autocorp <https://github.com/autocorp>' + colors.ENDC
+    print colors.OKBLUE + '...' + colors.ENDC
+    print colors.OKBLUE + 'Successfully built 4be767a4a3a8' + colors.ENDC
+    print colors.OKGREEN + 'Hubot> @hubot what is your opinion on badgers' + colors.ENDC
+    print colors.OKBLUE + 'Badgers? BADGERS? WE DON\'T NEED NO STINKIN BADGERS' + colors.ENDC
+    print
+
+def run():
+
+    print 'run - figure out how to do an interactice shell'
+
+
+def help():
+    print '''
+--------------------------------------------------------------------------
+Hi, I'm Jeeves. I'm here to make sure everything is okay with autobot. *_*
+--------------------------------------------------------------------------    
+
+I might not do very much, but I can be quite helpful if you know how to ask.
+
+    How can I help?
+
+    -c --check
+        Check that you have the required software, and help you install it.
+        Check for env vars.
+        Check what docker machines you have access to.
+
+    -w --walkthrough
+        A walkthrough of useful commands for controlling autobot.
+
+    -r --run
+        Run a pre-defined action.
+
+    -h --help
+        Show this awesome help screen, but then again you alredy knew
+        that -h does this, didn't you?
+    '''
+
+if __name__ == '__main__':
+
+    # set vars
+    # act on incoming params
+    for opt, arg in options:
+        if opt in ['-c', '--check']:
+            check_requirments()
+        elif opt in ['-w', '--walkthrough']:
+            walkthrough()
+        elif opt in ['-r', '--run']:
+            run()
+        elif opt in ['-h', '--help']:
+            help()
+
+    # if no args passed, show help
+    if not sys.argv[1:]:
+        help()

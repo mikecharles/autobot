@@ -1,0 +1,65 @@
+################################################################################
+# rebuild all the containers
+################################################################################
+
+# manage the containers with:
+#   ansible-playbook -i hosts site.yml --ask-vault-pass  # specify --ask-vault-pass if your groups_vars/all is encrypted
+#
+#   You will need to update groups_vars/all with your Amazon EC2 configuration
+
+########################################
+#  Checking for a docker container called 'autobot'.
+#  If it doesn't exist, make a new one.
+########################################
+- hosts: localhost
+  tasks:
+    - shell: docker-machine ls | sed 1d | awk '{print $1}' | grep -q '^autobot$' || docker-machine create -d amazonec2 --amazonec2-access-key {{ amazonec2_access_key }} --amazonec2-region {{ amazonec2_region }} --amazonec2-secret-key {{ amazonec2_secret_key }} --amazonec2-subnet-id {{ amazonec2_subnet_id }} --amazonec2-vpc-id {{ amazonec2_vpc_id }} autobot
+
+
+########################################
+#  Add ubuntu to the docker group,
+#  and create a self-signed cert for drone.
+########################################
+- hosts: autobot
+  sudo: true
+  tasks:
+
+    # add ubuntu to the docker group
+    - command: adduser ubuntu docker
+
+    - file: path=/srv/autobot state=directory
+
+    # create a self-signed cert for drone
+    - command: >
+        openssl req
+        -days 3650
+        -keyout key.pem
+        -newkey rsa:2048
+        -nodes
+        -out cert.pem
+        -subj '/CN=localhost'
+        -x509
+        chdir=/srv/autobot
+        creates=cert.pem
+
+
+########################################
+#  Executing docker-compose build.
+#  Passing ENV vars.
+#  Running docker-compose up.
+########################################
+- hosts: localhost
+  tasks:
+
+    - shell: $(docker-machine env autobot); docker-compose build
+
+    - shell: >
+        $(docker-machine env autobot);
+        env
+        DRONE_BITBUCKET_CLIENT={{ drone_bitbucket_client }}
+        DRONE_BITBUCKET_SECRET={{ drone_bitbucket_secret }}
+        HUBOT_HIPCHAT_JID={{ hubot_hipchat_jid }}
+        HUBOT_HIPCHAT_PASSWORD={{ hubot_hipchat_password }}
+        CONFLUENCE_USERNAME={{ confluence_username }}
+        CONFLUENCE_PASSWORD={{ confluence_password }}
+        docker-compose up -d
