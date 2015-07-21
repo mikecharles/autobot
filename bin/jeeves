@@ -40,10 +40,12 @@ def env_check(env_vars):
     longest=0
     for key, value in env_vars.iteritems():
 
-        if(os.environ.get(key)):
-            envlen=len(os.environ.get(key))
+        env_value = os.environ.get(key)
+
+        if(env_value):
+            envlen=len(env_value)
         else:
-            envlen = 4 # if we don't have an env value, we'll print `None`
+            envlen = 16 # if we don't have an env value, we'll print `Variable not set`
 
         variblelen=len(key)+envlen
 
@@ -53,20 +55,31 @@ def env_check(env_vars):
     # print the values (second loop)
     for key, value in env_vars.iteritems():
 
-        if(os.environ.get(key)):
-            envlen=len(os.environ.get(key))
+        env_value = os.environ.get(key)
+
+        if (env_value is None):
+            env_value = 'Variable not set'
+            envlen = 16 # if we don't have an env value, we'll print `Variable not set`
         else:
-            envlen = 4 # if we don't have an env value, we'll print `None`
+            envlen=len(env_value)
 
         variblelen=longest-(len(key)+envlen)
 
         padding_string=" "*(variblelen)
 
-        if(os.environ.get(key)==None):
+        if (os.environ.get(key) is None) or (len(env_value)==0):
             start_color=colors.FAIL
         else:
             start_color=colors.OKGREEN
-        print "Your ENV %s%s=%s%s %s:: Try something like this `export %s=%s`" % (start_color, key, os.environ.get(key), colors.ENDC, padding_string, key, value)
+
+            # if it's a password, lets not print all of it
+            if "PASSWORD" in key:
+                if (len(env_value)>3):
+                    env_value = '*'*(len(env_value)-2) + env_value[len(env_value)-2:]
+                else:
+                    env_value = '*'*len(env_value)
+
+        print "Your ENV %s%s=%s%s %s:: Try something like this `export %s=%s`" % (start_color, key, env_value, colors.ENDC, padding_string, key, value)
 
     print
 
@@ -116,13 +129,6 @@ def check_requirments():
 
 def walkthrough():
 
-    print colors.HEADER + 'Create a local docker host, for autobot development' + colors.ENDC
-    print 'docker-machine create -d virtualbox dev'
-    print
-
-    print colors.HEADER + 'Eval the docker env vars' + colors.ENDC
-    print colors.OKBLUE + 'Useful as your docker-* commands will target the autobot host.' + colors.ENDC
-    print 'eval "$(docker-machine env dev)"'
     print
 
     print colors.HEADER + 'Create a docker machine on Amazon EC2' + colors.ENDC
@@ -175,34 +181,61 @@ def walkthrough():
 
 def run():
 
-    print 'run - figure out how to do an interactice shell'
+    if len(sys.argv) < 3:
+        print colors.FAIL + 'why you no pass run param. Try `local`.' + colors.ENDC
 
+    elif (sys.argv[2]=='local'):
+        print
+        print colors.HEADER + '###########################' + colors.ENDC
+        print colors.HEADER + '# Local autobot development' + colors.ENDC
+        print colors.HEADER + '###########################' + colors.ENDC
+        print
+        print colors.OKBLUE + '# Create a VM for local development.' + colors.ENDC
+        print colors.OKBLUE + '# Eval the docker env vars: Useful as your docker-* commands will target the autobot host.' + colors.ENDC
+        print colors.OKBLUE + '# Build the Hubot container and run the Hubot shell.' + colors.ENDC
+        print 'docker-machine create -d virtualbox dev'
+        print 'eval "$(docker-machine env dev)"'
+        print 'docker-compose build hubot && docker run -it --rm autobot_hubot:latest hubot'
+        
+        print
+        print colors.HEADER + '# The Hubot shell:' + colors.ENDC
+        print colors.OKBLUE + '# Hubot> @hubot badgers' + colors.ENDC
+        print colors.OKBLUE + '# Badgers? BADGERS? WE DON\'T NEED NO STINKIN BADGERS' + colors.ENDC
+        print
+
+    else:
+        print colors.FAIL + 'why you no pass run param. Try `local`.' + colors.ENDC
 
 def help():
-    print '''
---------------------------------------------------------------------------
-Hi, I'm Jeeves. I'm here to make sure everything is okay with autobot. *_*
---------------------------------------------------------------------------    
 
-I might not do very much, but I can be quite helpful if you know how to ask.
+        print colors.HEADER + '--------------------------------------------------------------------------' + colors.ENDC
+        print colors.HEADER + 'Hi, I\'m Jeeves. I\'m here to make sure everything is okay with autobot. *_*' + colors.ENDC
+        print colors.HEADER + '--------------------------------------------------------------------------' + colors.ENDC
 
-    How can I help?
+        print 'I can be quite helpful if you know how to ask.'
+        print
 
-    -c --check
-        Check that you have the required software, and help you install it.
-        Check for env vars.
-        Check what docker machines you have access to.
+        print colors.OKBLUE + '    -c --check' + colors.ENDC 
+        print '        Check that you have the required software, and help you install it.'
+        print '        Check for env vars.'
+        print '        Check what docker machines you have access to.'
+        print
 
-    -w --walkthrough
-        A walkthrough of useful commands for controlling autobot.
+        print colors.OKBLUE + '    -h --help' + colors.ENDC 
+        print '        Show this awesome help screen, but then again you alredy knew'
+        print '        that -h does this, didn\'t you?'
+        print
 
-    -r --run
-        Run a pre-defined action.
+        print colors.OKBLUE + '    -r --run' + colors.ENDC 
+        print '        Let me show you what commands to run, to get everyday tasks complete.'
+        print
+        print colors.OKBLUE + '        jeeves -r local' + colors.ENDC 
+        print '            Create a VM for local development'
+        print
 
-    -h --help
-        Show this awesome help screen, but then again you alredy knew
-        that -h does this, didn't you?
-    '''
+        print colors.OKBLUE + '    -w --walkthrough' + colors.ENDC 
+        print '        A walkthrough of useful commands for controlling autobot.'
+        print
 
 if __name__ == '__main__':
 
