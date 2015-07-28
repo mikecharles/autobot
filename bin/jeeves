@@ -20,18 +20,27 @@ class colors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-def get_version(command):
-    command_result = os.popen(command).read()
-    m = re.search('(\d+\.)?(\d+\.)?(\*|\d+)', command_result)
+def get_version(package):
+
+    try:
+        command_result = subprocess.check_output([package, "--version"],stderr=None)
+        m = re.search('(\d+\.)?(\d+\.)?(\*|\d+)', command_result)
+    except OSError as e:
+        if e.errno == os.errno.ENOENT: # OSError: [Errno 2] No such file or directory
+            return False
+        else:
+            print (colors.FAIL + "[danger danger] %s :: Something went wrong while trying to get the version for this package" % (package) + colors.ENDC)
+            raise
+
     return m.group(0)
 
 
-def version_check(software, try_text):
-    software_version = get_version("%s --version" % software)
-    if(software_version <= 0):
-        print (colors.FAIL + "[FAIL] %s v%s :: try `%s`" % (software, software_version, try_text) + colors.ENDC)
+def version_check(package, try_text):
+    software_version = get_version(package)
+    if(software_version is False):
+        print (colors.FAIL + "[missing] %s :: try `%s`" % (package, try_text) + colors.ENDC)
     else:
-        print (colors.OKGREEN + "[ok] %s v%s" % (software, software_version) + colors.ENDC)
+        print (colors.OKGREEN + "[ok] %s v%s" % (package, software_version) + colors.ENDC)
 
 
 def env_check(env_vars):
@@ -88,6 +97,7 @@ def check_requirments():
 
     print
     print colors.HEADER + 'Checking for software dependencies' + colors.ENDC
+    print colors.OKBLUE + 'We don\'t check for specific versions, just the existance of the package' + colors.ENDC
     version_check("ansible", "brew install ansible")
     version_check("git", "brew install git")
     version_check("vboxmanage", "https://www.virtualbox.org/wiki/Downloads")
