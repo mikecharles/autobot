@@ -72,3 +72,38 @@ Badgers? BADGERS? WE DON'T NEED NO STINKIN BADGERS
 Now that you've got a local development environment, you'll want to write your own scripts. You can read up on [Hubot Scripting](https://github.com/github/hubot/blob/master/docs/scripting.md) to get started and drop you very own Hubot script into `./hubot-scripts` when you're ready to test them out.
 
 Other tasks will make use of more bits of technology and connections, like `Redis`, `Confluence` and `Hipchat`. We'll get stuck into those in another example.
+
+# Deploying to a real environment
+
+You can ask Jeeves to help you deploy autobot to a real environment, and by real we mean one that's not sitting on your local machine.
+
+## Assumptions
+
+This is still a new feature, so there are quite a few assumptions being made here. At this stage, results may vary. You've been warned!
+
+1. AWS account
+2. Drone account
+3. Hipchat account
+4. Confluence account
+5. A `group_vars/all` file (You can use the `group_vars/example` as a template). Make sure you supply values for `AWS`, `drone`, `hipchat`, `confluence`.
+
+## Jeeves. Run. Remote.
+
+After all that, life is simple, just ask Jeeves for a bit of help deploying remotly
+```
+./bin/jeeves --run remote
+```
+
+Pro-Tip: He's really just going to tell you to run `ansible-playbook -i hosts site.yml` but he'll throw in a few pointers so go ahead and try anyway.
+
+## What's going on behind the scenes?
+
+
+The result is pretty neat, you'll end up with a new EC2 node, with 3 containers `hubot`, `redis` and `drone`.
+
+Redis is the datastore (or brain) for Hubot, and drone is the continuous integration container (it updates hubot every time you make commits to your repo).
+
+While we're talking about neat things lets talk about what happens if the EC2 node is terminated, or something else equally awful happens. You just run the remote command again and everything will be re-created for you again, just like magic.
+
+That's right folks programming is magic!
+*(disclaimer, it's not actually magic, it's just programming)*. 
