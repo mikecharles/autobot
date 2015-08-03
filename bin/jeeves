@@ -238,9 +238,9 @@ def run():
         print colors.OKBLUE + '# Badgers? BADGERS? WE DON\'T NEED NO STINKIN BADGERS' + colors.ENDC
         print
 
-        print colors.HEADER + '# Checking containers in dev' + colors.ENDC
-        print colors.OKBLUE + 'Here are your dev containers, useful for troubleshooting.' + colors.ENDC
-        print '`eval "$(docker-machine env dev)"; docker ps`'
+        print colors.HEADER  + '# Checking containers in dev' + colors.ENDC
+        print colors.OKBLUE  + 'Here are your dev containers, useful for troubleshooting.' + colors.ENDC
+        print colors.OKGREEN + 'eval "$(docker-machine env dev)"; docker ps' + colors.ENDC
         command = 'eval "$(docker-machine env dev)"; docker ps'
         command_result = os.popen(command).read()
         print command_result
@@ -257,9 +257,9 @@ def run():
         print 'ansible-playbook -i hosts site.yml'
     
         print    
-        print colors.HEADER + '# Checking containers in autobot' + colors.ENDC
-        print colors.OKBLUE + 'Here are your autobot containers, useful for troubleshooting.' + colors.ENDC
-        print '`eval "$(docker-machine env autobot)"; docker ps`'
+        print colors.HEADER  + '# Checking containers in autobot' + colors.ENDC
+        print colors.OKBLUE  + 'Here are your autobot containers, useful for troubleshooting.' + colors.ENDC
+        print colors.OKGREEN + 'eval "$(docker-machine env autobot)"; docker ps' + colors.ENDC
         command = 'eval "$(docker-machine env autobot)"; docker ps'
         command_result = os.popen(command).read()
         print command_result
