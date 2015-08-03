@@ -1,101 +1,74 @@
-[![Stories in Ready](https://badge.waffle.io/autocorp/autobot.svg?label=ready&title=Ready)](http://waffle.io/autocorp/autobot)
+In a hurry? Try `./bin/jeeves --check software` or skip ahead to [getting started](#getting-started).
 
-# autobot
+# Why do we exist?
 
-The autobot project provides an easy delivery mechanism for maintaining your very own Hubot installation.
+We want to help you maintain your very own [Hubot](https://hubot.github.com/) installation, and develop your own Hubot scripts. Here is how we help:
+
+**In Dev**
+- Create a local dev environment (Hubot installed and configured for you)
+- Easily test your own Hubot scripts in the dev environment
+- Maintain your own private Hubot scripts
+
+**In Prod**
+- Publish your own Hubot scripts for easy consumption
+- Manage a remote Hubot environment on your own server (e.g one you own in AWS)
+- Make sure your Hubot environments are always up to date with your latest scripts  
+
+## Why do I need autbot?
+autobot is designed to be personalised. He doesn't come with a set of pre-defined scripts. He's there to help you manage all the back of house tasks, so you can focus on creating Hubot scripts for your very own robot.
+
+Let's pretend your organisation is `ACME`. We hope you use autobot to create you very own robot called `ACMEbot`. He'll be populated with scripts that you've created and he'll do all the things you want him to do.
+
+# Getting Help
+
+The autobot project is managed through GitHub issues, and our waffle board makes it easy to see what we're working on, and any outstanding issues [![Stories in Ready](https://badge.waffle.io/autocorp/autobot.svg?label=ready&title=Ready)](http://waffle.io/autocorp/autobot)
+
+You can also get more information by visiting our [wiki](https://github.com/autocorp/autobot/wiki).
 
 ![alt text](autobot-logo.png "autobot")
 
 # Getting Started
+
+We've created jeeves so he can do all the heavy lifting for you. He'll make sure you have the required software, and help you with the day to day development too.
+
+Jeeves can check lots of things for you, but we only need to worry about software dependencies right now. Make sure you're all green for the the required software and you can move on to creating your very own local development environment.
+
 ```
-# Get yourself a copy of the repo
-git clone git@github.com:autocorp/autobot.git
+# Donwload a copy of autobot
+git clone git@github.com:autocorp/autobot.git; cd autobot;
 
-# Run Jeeves, who will guide you through autobot setup and usage
-cd autobot; ./bin/jeeves
-```
+# Let Jeeves check your system for the required software
+./bin/jeeves --check software
 
-# Hello World
+# Ask Jeeves how to create a local dev environment (for testing Hubot scripts)
+./bin/jeeves --run local
 
-Lets get straight into a real use case. We're going to create a development server and interact with Hubot.
-
-In your terminal, type the following:
-```
-docker-machine create -d virtualbox dev
-eval "$(docker-machine env dev)"
-docker-compose build hubot && docker run -it --rm autobot_hubot:latest hubot
 ```
 
-Once you're in a Hubot shell you can start talking to Hubot:
+He's still learning so make sure to raise an [issue](https://github.com/autocorp/autobot/issues) if you think he could help you out a little better.
+
+
+## A closer look at the development environment
+
+You can go ahead and run the commands Jeeves gave you when you did a `jeeves -r local`, but for those that are curious we're going to breakdown what's going on here.
+
+1. `docker-machine create -d virtualbox dev` will instruct docker-machine to create a Virtual Machine called `dev`. This will be used to house your Hubot container for local development of Hubot scripts.
+
+2. You'll then run `eval "$(docker-machine env dev)"` to make sure all your `docker-*` commands are targeted to your dev container.
+
+3. Finally, the `docker-compose build hubot && docker run -it --rm autobot_hubot:latest hubot` command will spin up a new Hubot container in your local `dev` Virtual Machine.
+
+All the scripts from the `hubot-scripts` folder will be loaded for you (so you can place scripts in there while you're doing local development).
+
+At this stage you should be at the `Hubot>` prompt, and the `badgers` demo script should be loaded for you. Try talking to Hubot, like this `Hubot> @hubot how do you feel about badgers`.
+
+Hubot should respond with:
 ```
-Hubot> @hubot badgers
+Hubot> @hubot how do you feel about badgers
 Badgers? BADGERS? WE DON'T NEED NO STINKIN BADGERS
 ```
 
-Real world usage may include other bits of technology and connections, like Redis, Confluence and Hipchat. We can build in later.
+## Life after dev
+Now that you've got a local development environment, you'll want to write your own scripts. You can read up on [Hubot Scripting](https://github.com/github/hubot/blob/master/docs/scripting.md) to get started and drop you very own Hubot script into `./hubot-scripts` when you're ready to test them out.
 
-## The Stack
-
-The key techologies the make up Autobot are: hubot, ansible, docker and drone.
-
-The stack looks like this:
-
-- Ansible (to configure the hosts)
-- Docker, Docker-Machine, Docker-Compose (to maintain the containers)
-- Virtual Machine & AWS (for compute power)
-- Hubot with a Redis data store, deployed via drone
-
-## This Repo
-
-### bin/
-
-The bin directory contains scripts used by the project (though not strictly binary files).
-
-- jeeves
-
-`jeeves` is a python script to help setup and manage autobot
-
-### /
-
-- Dockerfile
-- package.json
-- docker-compose.yaml
-- site.yaml
-- hosts
-
-The `Dockerfile` holds the configuration for spining up an instance of Hubot and loading scripts from the `hubot-scripts` directory. 
-
-`package.json` is a supporting file, which gets fed in by `Dockerfile`.
-
-
-`docker-compose.yaml` configures the following containers:
-
-- hubot
-- redis (data persistance layer)
-- drone (continuous delivery)
-
-Ansible uses `site.yaml` to do the following:
-
-- on localhost: Checking for a docker container called 'autobot'. If it doesn't exist, make a new one.
-- on autobot: Add ubuntu to the docker group, and create a self-signed cert for drone.
-- on localhost: Executing docker-compose build. Passing ENV vars. Running docker-compose up.
-
-and for storing private data in `group_vars/all`.
-
-### hubot-scripts/
-
-Any scripts in this directory are loaded by the hubot Dockerfile.
-
-- example.coffee (robot.hear /badger/i)
-
-`hosts` is a python script to create a dynamic inventory from docker-machine
-
-### continuous-delivery/
-
-- .drone.yaml
-
-`.drone.yaml` is the configuration file for drone (a continuous delivery pipeline). It takes an ubuntu image and installs docker-compose on it. A deployment script builds hubot with the latest code. Notifications are sent to a hipchat room.
-
-### docs/
-
-project documentation
+Other tasks will make use of more bits of technology and connections, like `Redis`, `Confluence` and `Hipchat`. We'll get stuck into those in another example.
