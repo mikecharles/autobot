@@ -121,21 +121,21 @@ def check_requirments():
             print
             sys.exit()
 
-    print
-    print colors.HEADER + 'Checking your ~/.docker/ file for `dev` machine keys.' + colors.ENDC
-    print colors.OKBLUE + 'This will be important once you create an dev container.' + colors.ENDC
+    # print
+    # print colors.HEADER + 'Checking your ~/.docker/ file for `dev` machine keys.' + colors.ENDC
+    # print colors.OKBLUE + 'This will be important once you create an dev container.' + colors.ENDC
 
-    command = 'ls ~/.docker/machine/machines/dev/'
-    command_result = os.popen(command).read()
-    print command_result
+    # command = 'ls ~/.docker/machine/machines/dev/'
+    # command_result = os.popen(command).read()
+    # print command_result
 
-    print
-    print colors.HEADER + 'Checking your ~/.docker/ file for `autobot` machine keys.' + colors.ENDC
-    print colors.OKBLUE + 'This will be important once you create an autobot container.' + colors.ENDC
+    # print
+    # print colors.HEADER + 'Checking your ~/.docker/ file for `autobot` machine keys.' + colors.ENDC
+    # print colors.OKBLUE + 'This will be important once you create an autobot container.' + colors.ENDC
 
-    command = 'ls ~/.docker/machine/machines/autobot/'
-    command_result = os.popen(command).read()
-    print command_result
+    # command = 'ls ~/.docker/machine/machines/autobot/'
+    # command_result = os.popen(command).read()
+    # print command_result
 
     print
     print colors.HEADER + 'Checking your ENV variables' + colors.ENDC
@@ -154,18 +154,11 @@ def check_requirments():
     
     env_check(env_vars)    
 
-    print colors.HEADER + 'Checking what docker machines you have access to' + colors.ENDC
-    print colors.OKBLUE + 'You should see a docker machine called `dev` for local development,' + colors.ENDC
-    print colors.OKBLUE + 'and one called `autobot` for an environment you have deployed.' + colors.ENDC
-    print '`docker-machine ls`'
+    print colors.HEADER  + 'Checking what docker machines you have access to' + colors.ENDC
+    print colors.OKBLUE  + 'You should see a docker machine called `dev` for local development,' + colors.ENDC
+    print colors.OKBLUE  + 'and one called `autobot` for an environment you have deployed.' + colors.ENDC
+    print colors.OKGREEN + 'docker-machine ls' + colors.ENDC
     command = 'docker-machine ls'
-    command_result = os.popen(command).read()
-    print command_result
-
-    print colors.HEADER + 'Checking containers in dev' + colors.ENDC
-    print colors.OKBLUE + 'Here are your dev containers, useful for troubleshooting.' + colors.ENDC
-    print '`eval "$(docker-machine env dev)"; docker ps`'
-    command = 'eval "$(docker-machine env dev)"; docker ps'
     command_result = os.popen(command).read()
     print command_result
 
@@ -224,7 +217,7 @@ def walkthrough():
 def run():
 
     if len(sys.argv) < 3:
-        print colors.FAIL + 'why you no pass run param. Try `local`.' + colors.ENDC
+        print colors.FAIL + 'why you no pass run param. Try `local` or `remote`.' + colors.ENDC
 
     elif (sys.argv[2]=='local'):
         print
@@ -240,13 +233,39 @@ def run():
         print 'docker-compose build hubot && docker run -it --rm autobot_hubot:latest hubot'
         
         print
-        print colors.HEADER + '# The Hubot shell:' + colors.ENDC
+        print colors.HEADER + '# The Hubot shell' + colors.ENDC
         print colors.OKBLUE + '# Hubot> @hubot badgers' + colors.ENDC
         print colors.OKBLUE + '# Badgers? BADGERS? WE DON\'T NEED NO STINKIN BADGERS' + colors.ENDC
         print
 
+        print colors.HEADER  + '# Checking containers in dev' + colors.ENDC
+        print colors.OKBLUE  + 'Here are your dev containers, useful for troubleshooting.' + colors.ENDC
+        print colors.OKGREEN + 'eval "$(docker-machine env dev)"; docker ps' + colors.ENDC
+        command = 'eval "$(docker-machine env dev)"; docker ps'
+        command_result = os.popen(command).read()
+        print command_result
+
+    elif (sys.argv[2]=='remote'):
+        print
+        print colors.HEADER + '############################' + colors.ENDC
+        print colors.HEADER + '# Remote autobot development' + colors.ENDC
+        print colors.HEADER + '############################' + colors.ENDC
+        print
+        print colors.OKBLUE + '# Make sure you\'ve created a group_vars/all file. Use group_vars/example as a starting point.' + colors.ENDC
+        print colors.OKBLUE + '# If your groups_vars/all is encrypted. Specify the --ask-vault-pass param.' + colors.ENDC
+        print colors.OKBLUE + '# This ansible playbook will manage the VM and containers for autobot.' + colors.ENDC
+        print 'ansible-playbook -i hosts site.yml'
+    
+        print    
+        print colors.HEADER  + '# Checking containers in autobot' + colors.ENDC
+        print colors.OKBLUE  + 'Here are your autobot containers, useful for troubleshooting.' + colors.ENDC
+        print colors.OKGREEN + 'eval "$(docker-machine env autobot)"; docker ps' + colors.ENDC
+        command = 'eval "$(docker-machine env autobot)"; docker ps'
+        command_result = os.popen(command).read()
+        print command_result
+
     else:
-        print colors.FAIL + 'why you no pass run param. Try `local`.' + colors.ENDC
+        print colors.FAIL + 'why you no pass run param. Try `local` or `remote`.' + colors.ENDC
 
 def help():
 
@@ -258,7 +277,7 @@ def help():
         print
 
         print colors.OKBLUE + '    -c --check' + colors.ENDC 
-        print '        Check software, vars and containers.'
+        print '        Check software, ENV vars and docker-machines.'
         print
 
         print colors.OKBLUE + '        jeeves -c software' + colors.ENDC 
@@ -275,6 +294,9 @@ def help():
         print
         print colors.OKBLUE + '        jeeves -r local' + colors.ENDC 
         print '            Create a VM for local development'
+        print
+        print colors.OKBLUE + '        jeeves -r remote' + colors.ENDC 
+        print '            Create a VM for a remote environment'
         print
 
         print colors.OKBLUE + '    -w --walkthrough' + colors.ENDC 
