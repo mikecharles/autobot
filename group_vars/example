@@ -1,0 +1,15 @@
+---
+amazonec2_access_key: foo
+amazonec2_secret_key: bar
+amazonec2_region: xx-xxx-x
+amazonec2_vpc_id: vpc-xxx
+amazonec2_subnet_id: subnet-xxx
+
+drone_bitbucket_client: foo
+drone_bitbucket_secret: bar
+
+hubot_hipchat_jid: foo
+hubot_hipchat_password: bar
+
+confluence_username: foo
+confluence_password: bar
