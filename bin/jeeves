@@ -20,18 +20,27 @@ class colors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-def get_version(command):
-    command_result = os.popen(command).read()
-    m = re.search('(\d+\.)?(\d+\.)?(\*|\d+)', command_result)
+def get_version(package):
+
+    try:
+        command_result = subprocess.check_output([package, "--version"],stderr=None)
+        m = re.search('(\d+\.)?(\d+\.)?(\*|\d+)', command_result)
+    except OSError as e:
+        if e.errno == os.errno.ENOENT: # OSError: [Errno 2] No such file or directory
+            return False
+        else:
+            print (colors.FAIL + "[danger danger] %s :: Something went wrong while trying to get the version for this package" % (package) + colors.ENDC)
+            raise
+
     return m.group(0)
 
 
-def version_check(software, try_text):
-    software_version = get_version("%s --version" % software)
-    if(software_version <= 0):
-        print (colors.FAIL + "[FAIL] %s v%s :: try `%s`" % (software, software_version, try_text) + colors.ENDC)
+def version_check(package, try_text):
+    software_version = get_version(package)
+    if(software_version is False):
+        print (colors.FAIL + "[missing] %s :: try `%s`" % (package, try_text) + colors.ENDC)
     else:
-        print (colors.OKGREEN + "[ok] %s v%s" % (software, software_version) + colors.ENDC)
+        print (colors.OKGREEN + "[ok] %s v%s" % (package, software_version) + colors.ENDC)
 
 
 def env_check(env_vars):
@@ -86,26 +95,56 @@ def env_check(env_vars):
 
 def check_requirments():
 
+    print colors.HEADER + '--------------------------------------------------------------------------' + colors.ENDC
+    print colors.HEADER + 'Okay Sir, here is everything I know about your system. *_*' + colors.ENDC
+    print colors.HEADER + '--------------------------------------------------------------------------' + colors.ENDC
+
+
     print
     print colors.HEADER + 'Checking for software dependencies' + colors.ENDC
-    version_check("ansible", "brew install ansible")
+    print colors.OKBLUE + 'I did not have time to check for specific versions,' + colors.ENDC
+    print colors.OKBLUE + 'but here is an inventory of all the software you will need to get started.' + colors.ENDC
+    print colors.OKBLUE + 'Treat this like a health indicator,' + colors.ENDC
+    print colors.OKBLUE + 'all green means move onto the next step, red means fix before moving on.' + colors.ENDC
+
     version_check("git", "brew install git")
+    version_check("ansible", "brew install ansible")
     version_check("vboxmanage", "https://www.virtualbox.org/wiki/Downloads")
     version_check("docker", "curl -L https://get.docker.com/builds/Darwin/x86_64/docker-latest > /usr/local/bin/docker'")
     version_check("docker-machine", "sudo wget -O /usr/local/bin/docker-machine https://github.com/docker/machine/releases/download/v0.1.0/docker-machine_darwin-amd64; chmod +x docker-machine")
     version_check("docker-compose", "curl -L https://github.com/docker/compose/releases/download/1.1.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose; chmod +x /usr/local/bin/docker-compose")
+    
+    if len(sys.argv) > 2: # only if something was passed
+        if (sys.argv[2]=='software'):
+            print
+            print colors.OKBLUE + 'Once you have all the required software try running `./bin/jeeves --run local`' + colors.ENDC
+            print
+            sys.exit()
 
     print
-    print colors.HEADER + 'Checking your ~/.docker/ file for autobot machine keys' + colors.ENDC
-    command = 'ls -la ~/.docker/machine/machines/autobot/'
+    print colors.HEADER + 'Checking your ~/.docker/ file for `dev` machine keys.' + colors.ENDC
+    print colors.OKBLUE + 'This will be important once you create an dev container.' + colors.ENDC
+
+    command = 'ls ~/.docker/machine/machines/dev/'
     command_result = os.popen(command).read()
     print command_result
 
     print
-    print colors.HEADER + 'Checking your ENV variables (place these somewhere like ~/.bash_profile so they persist)' + colors.ENDC
+    print colors.HEADER + 'Checking your ~/.docker/ file for `autobot` machine keys.' + colors.ENDC
+    print colors.OKBLUE + 'This will be important once you create an autobot container.' + colors.ENDC
+
+    command = 'ls ~/.docker/machine/machines/autobot/'
+    command_result = os.popen(command).read()
+    print command_result
+
+    print
+    print colors.HEADER + 'Checking your ENV variables' + colors.ENDC
+    print colors.OKBLUE + 'You will customise autobot via environment variables.' + colors.ENDC
+    print colors.OKBLUE + 'Do not worry if you don\'t have all these variables set,' + colors.ENDC
+    print colors.OKBLUE + 'but if you do run into problems, it\'s nice to be aware of them.' + colors.ENDC
+    print colors.OKBLUE + 'Tip: You might like to place these somewhere like ~/.bash_profile so they persist.' + colors.ENDC
 
     env_vars = {
-        'PWD'                    : '~/autobot',
         'MACHINE_STORAGE_PATH'   : '$PWD/.docker',
         'CONFLUENCE_USERNAME'    : 'your_username',
         'CONFLUENCE_PASSWORD'    : 'your_password',
@@ -116,12 +155,15 @@ def check_requirments():
     env_check(env_vars)    
 
     print colors.HEADER + 'Checking what docker machines you have access to' + colors.ENDC
+    print colors.OKBLUE + 'You should see a docker machine called `dev` for local development,' + colors.ENDC
+    print colors.OKBLUE + 'and one called `autobot` for an environment you have deployed.' + colors.ENDC
     print '`docker-machine ls`'
     command = 'docker-machine ls'
     command_result = os.popen(command).read()
     print command_result
 
     print colors.HEADER + 'Checking containers in dev' + colors.ENDC
+    print colors.OKBLUE + 'Here are your dev containers, useful for troubleshooting.' + colors.ENDC
     print '`eval "$(docker-machine env dev)"; docker ps`'
     command = 'eval "$(docker-machine env dev)"; docker ps'
     command_result = os.popen(command).read()
@@ -216,9 +258,11 @@ def help():
         print
 
         print colors.OKBLUE + '    -c --check' + colors.ENDC 
-        print '        Check that you have the required software, and help you install it.'
-        print '        Check for env vars.'
-        print '        Check what docker machines you have access to.'
+        print '        Check software, vars and containers.'
+        print
+
+        print colors.OKBLUE + '        jeeves -c software' + colors.ENDC 
+        print '            Only check for the required software.'
         print
 
         print colors.OKBLUE + '    -h --help' + colors.ENDC 
