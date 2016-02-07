@@ -14,7 +14,7 @@ We want to help you maintain your very own [Hubot](https://hubot.github.com/) in
 - Manage a remote Hubot environment on your own server (e.g one you own in AWS)
 - Make sure your Hubot environments are always up to date with your latest scripts  
 
-## Why do I need autbot?
+## Why do I need autobot?
 autobot is designed to be personalised. He doesn't come with a set of pre-defined scripts. He's there to help you manage all the back of house tasks, so you can focus on creating Hubot scripts for your very own robot.
 
 Let's pretend your organisation is `ACME`. We hope you use autobot to create you very own robot called `ACMEbot`. He'll be populated with scripts that you've created and he'll do all the things you want him to do.
